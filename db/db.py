@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import json
 from lexicon.lexicon import Lexicon
 from services.book import prepare_book
+from os.path import exists
 
 
 @dataclass
@@ -50,6 +51,13 @@ class DB_Books:
 
     @staticmethod
     def load(path: str) -> list[Book]:
+        if not exists(path):
+            with open(path, "x", encoding="utf-8") as f:
+                f.seek(0)
+                f.truncate()
+                f.write(json.dumps([], ensure_ascii=False, indent=4))
+                return []
+            
         with open(path, "r+", encoding="utf-8") as f:
             content = f.read()
             if content:
@@ -66,11 +74,6 @@ class DB_Books:
                     )
                     for book in books
                 ]
-            else:
-                f.seek(0)
-                f.truncate()
-                f.write(json.dumps([], ensure_ascii=False, indent=4))
-                return []
 
     @staticmethod
     def get_json_list_books(books: list[Book]) -> list[dict]:
@@ -172,6 +175,13 @@ class DB_Users:
 
     @staticmethod
     def load(path: str) -> list[User]:
+        if not exists(path):
+            with open(path, "x", encoding="utf-8") as f:
+                f.seek(0)
+                f.truncate()
+                f.write(json.dumps([], ensure_ascii=False, indent=4))
+                return []
+
         with open(path, "r+", encoding="utf-8") as f:
             content = f.read()
             if content:
@@ -189,11 +199,6 @@ class DB_Users:
                     )
                     for book in books
                 ]
-            else:
-                f.seek(0)
-                f.truncate()
-                f.write(json.dumps([], ensure_ascii=False, indent=4))
-                return []
 
     @staticmethod
     def get_json_list_users(users: list[User]) -> list[dict]:
@@ -218,14 +223,3 @@ class DB_Users:
             f.truncate()
             f.write(json.dumps(users, ensure_ascii=False, indent=4))
 
-
-if __name__ == "__main__":
-    # dbUser = DB_Users("./db/users.json")
-    # print(dbUser.users)
-
-    books = DB_Books("./db/books.json")
-    # books.add(Book("Пчеловод-любитель", "./books/Пчеловод-любитель.txt"))
-    # books.add(Book("Рождество на пятьдесят долларов", "./books/Рождество на 50 долларов.txt", 'Бриджет Колерн'))
-    # books.add(Book("Зигзаг судьбы", "./books/Зигзаг судьбы.txt", 'Анна Кирьянова'))
-    print(books.books)
-    books.save()

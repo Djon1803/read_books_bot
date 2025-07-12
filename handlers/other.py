@@ -17,7 +17,7 @@ async def handle_other_message(message: Message, books: DB_Books, users: DB_User
 
 # Вывод списка книг
 @router.callback_query(F.data.in_(["cancel"]))
-async def process_beginning_command(callback: CallbackQuery, books: DB_Books, users: DB_Users):
+async def process_cancel(callback: CallbackQuery, books: DB_Books, users: DB_Users):
     user = get_user(callback, books, users)
     await callback.answer()
     await callback.message.edit_text(text=user.lexicon.lexicon['cancel_text'])
