@@ -54,7 +54,7 @@ def get_inline_btns_del_marks(
         if book:
             temp = [
                 InlineKeyboardButton(
-                    text=f'{user.lexicon.lexicon['del']} {book.name} [{mark["number_page"]}] - {book.get_page(mark["number_page"])[:100]}',
+                    text=f'{user.lexicon.lexicon["del"]} {book.name} [{mark["number_page"]}] - {book.get_page(mark["number_page"])[:100]}',
                     callback_data=f'del_mark:book_id={mark["book_id"]}&number_page={mark["number_page"]}',
                 )
             ]
