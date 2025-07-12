@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "name": "Рождество на пятьдесят долларов",
+        "path": "./books/Рождество на 50 долларов.txt",
+        "author": "Бриджет Колерн",
+        "owner": null,
+        "access": "general",
+        "date_load": "05.07.2025"
+    },
+    {
+        "id": 2,
+        "name": "Марсианские хроники",
+        "path": "books/Bredberi_Marsianskie-hroniki.txt",
+        "author": "Рэй Брэдбери",
+        "owner": null,
+        "access": "general",
+        "date_load": "12.07.2025"
+    },
+    {
+        "id": 3,
+        "name": "Попутчица",
+        "path": "books/Попунтчица.txt",
+        "author": "Ольга Савельева",
+        "owner": null,
+        "access": "general",
+        "date_load": "12.07.2025"
+    }
+]
