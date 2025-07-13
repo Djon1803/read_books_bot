@@ -1,23 +1,16 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import CallbackQuery, Message
 
-from services.services import get_user
 from db.db import DB_Books, DB_Users, User
 
 
 class IsAddBookInputName(BaseFilter):
-    async def __call__(
-        self, message: Message, books: DB_Books, users: DB_Users
-    ) -> bool:
-        user = get_user(message, books, users)
+    async def __call__(self, message: Message, user: User) -> bool:
         return hasattr(user, "add_book") and user.add_book.get("name", None) == None
 
 
 class IsAddBookInputAuthor(BaseFilter):
-    async def __call__(
-        self, message: Message, books: DB_Books, users: DB_Users
-    ) -> bool:
-        user = get_user(message, books, users)
+    async def __call__(self, message: Message, user: User) -> bool:
         return (
             hasattr(user, "add_book")
             and user.add_book.get("name", None) != None
@@ -26,10 +19,7 @@ class IsAddBookInputAuthor(BaseFilter):
 
 
 class IsAddBookInputAccess(BaseFilter):
-    async def __call__(
-        self, message: Message, books: DB_Books, users: DB_Users
-    ) -> bool:
-        user = get_user(message, books, users)
+    async def __call__(self, message: Message, user: User) -> bool:
         return (
             hasattr(user, "add_book")
             and user.add_book.get("name", None) != None
@@ -39,8 +29,5 @@ class IsAddBookInputAccess(BaseFilter):
 
 
 class IsCancelAddBook(BaseFilter):
-    async def __call__(
-        self, message: Message, books: DB_Books, users: DB_Users
-    ) -> bool:
-        user = get_user(message, books, users)
+    async def __call__(self, message: Message, user: User) -> bool:
         return message.text == user.lexicon.lexicon["cancel_add_book_button"]

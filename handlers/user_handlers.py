@@ -30,8 +30,6 @@ from os import remove
 from os.path import exists, abspath
 import datetime
 
-from services.services import get_user
-
 from filters.filters import (
     IsAddBookInputName,
     IsAddBookInputAuthor,
@@ -51,24 +49,23 @@ router = Router()
 # добавлять пользователя в базу данных
 # и отправлять ему приветственное сообщение
 @router.message(CommandStart())
-async def process_start_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_start_command(message: Message, user: User):
     await message.answer(text=user.lexicon.lexicon["/start"])
 
 
 # Этот хэндлер будет срабатывать на команду "/help"
 # и отправлять пользователю сообщение со списком доступных команд в боте
 @router.message(Command(commands="help"))
-async def process_help_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_help_command(message: Message, user: User):
     await message.answer(text=user.lexicon.lexicon["/help"])
 
 
 # Этот хэндлер будет срабатывать на команду "/save"
 # и сохранять базы данных в json файлы
 @router.message(Command(commands="save"))
-async def process_save_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_save_command(
+    message: Message, user: User, books: DB_Books, users: DB_Users
+):
     users.save()
     books.save()
     await message.answer(user.lexicon.lexicon["save_data"])
@@ -77,8 +74,9 @@ async def process_save_command(message: Message, books: DB_Books, users: DB_User
 # Этот хэндлер будет срабатывать на команду "/beginning"
 # и отправлять пользователю первую страницу книги с кнопками пагинации
 @router.message(Command(commands="beginning"))
-async def process_beginning_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_beginning_command(
+    message: Message, user: User, books: DB_Books, users: DB_Users
+):
     book = books.get_book(user.id_select_book)
     if book:
         index_page = 1
@@ -95,10 +93,7 @@ async def process_beginning_command(message: Message, books: DB_Books, users: DB
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с номером текущей страницы и добавлять текущую страницу в закладки
 @router.callback_query(F.data.in_(["page_add_mark"]))
-async def process_page_add_mark(
-    callback: CallbackQuery, books: DB_Books, users: DB_Users
-):
-    user = get_user(callback, books, users)
+async def process_page_add_mark(callback: CallbackQuery, user: User, users: DB_Users):
     user.add_mark(user.id_select_book, user.reading[str(user.id_select_book)])
     users.save()
     await callback.answer(text=user.lexicon.lexicon["add_mark"])
@@ -108,9 +103,8 @@ async def process_page_add_mark(
 # во время взаимодействия пользователя с сообщением-книгой
 @router.callback_query(F.data.in_(["page_back"]))
 async def process_page_back_press(
-    callback: CallbackQuery, books: DB_Books, users: DB_Users
+    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
 ):
-    user = get_user(callback, books, users)
     book = books.get_book(user.id_select_book)
     this_index = user.reading.get(str(user.id_select_book), 1)
     if book:
@@ -132,9 +126,8 @@ async def process_page_back_press(
 # во время взаимодействия пользователя с сообщением-книгой
 @router.callback_query(F.data.in_(["page_next"]))
 async def process_page_next_press(
-    callback: CallbackQuery, books: DB_Books, users: DB_Users
+    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
 ):
-    user = get_user(callback, books, users)
     book = books.get_book(user.id_select_book)
     this_index = user.reading.get(str(user.id_select_book), 1)
     if book:
@@ -156,10 +149,9 @@ async def process_page_next_press(
 # и отправлять пользователю страницу книги, на которой пользователь
 # остановился в процессе взаимодействия с ботом
 @router.message(Command(commands="continue"))
-async def process_continue_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_continue_command(message: Message, user: User, books: DB_Books):
     book = books.get_book(user.id_select_book)
-    
+
     if book:
         index_page = user.reading[str(user.id_select_book)]
         page = book.get_page(index_page)
@@ -173,8 +165,7 @@ async def process_continue_command(message: Message, books: DB_Books, users: DB_
 # Этот хэндлер будет срабатывать на команду "/books"
 # Отобразит пользователю доступные книги для чтения
 @router.message(Command(commands="books"))
-async def process_books_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_books_command(message: Message, user: User, books: DB_Books):
     lst_books = [
         book
         for book in books.books
@@ -192,9 +183,7 @@ async def process_books_command(message: Message, books: DB_Books, users: DB_Use
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # при нажатие на кнопу для редактирования книг из списка книг
 @router.callback_query(F.data.in_(["edit_books"]))
-async def process_edit_books(callback: CallbackQuery, books: DB_Books, users: DB_Users):
-    user = get_user(callback, books, users)
-
+async def process_edit_books(callback: CallbackQuery, user: User, books: DB_Books):
     lst_books = [book for book in books.books if user.admin or book.owner == user.id]
 
     if lst_books:
@@ -209,9 +198,7 @@ async def process_edit_books(callback: CallbackQuery, books: DB_Books, users: DB
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # при нажатие на кнопу для скачивания книг из списка книг
 @router.callback_query(F.data.in_(["load_books"]))
-async def process_load_books(callback: CallbackQuery, books: DB_Books, users: DB_Users):
-    user = get_user(callback, books, users)
-
+async def process_load_books(callback: CallbackQuery, user: User, books: DB_Books):
     lst_books = [
         book
         for book in books.books
@@ -230,8 +217,9 @@ async def process_load_books(callback: CallbackQuery, books: DB_Books, users: DB
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с книгой из списка книг для удаления
 @router.callback_query(F.data.startswith("del_book="))
-async def process_del_book(callback: CallbackQuery, books: DB_Books, users: DB_Users):
-    user = get_user(callback, books, users)
+async def process_del_book(
+    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
+):
     book_id = int(callback.data.split("=")[1])
     book = books.get_book(book_id)
     logger.info("Del book: %s", book)
@@ -257,8 +245,7 @@ async def process_del_book(callback: CallbackQuery, books: DB_Books, users: DB_U
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с книгой из списка книг для скачивания
 @router.callback_query(F.data.startswith("load_book="))
-async def process_load_book(callback: CallbackQuery, books: DB_Books, users: DB_Users):
-    user = get_user(callback, books, users)
+async def process_load_book(callback: CallbackQuery, user: User, books: DB_Books):
     book_id = int(callback.data.split("=")[1])
     book = books.get_book(book_id)
     book_path = abspath(book.path)
@@ -289,9 +276,8 @@ async def process_load_book(callback: CallbackQuery, books: DB_Books, users: DB_
 # с книгой из списка книг для выбора
 @router.callback_query(F.data.startswith("select_book="))
 async def process_select_book(
-    callback: CallbackQuery, books: DB_Books, users: DB_Users
+    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
 ):
-    user = get_user(callback, books, users)
     book_id = int(callback.data.split("=")[1])
     book = books.get_book(book_id)
     if book:
@@ -316,8 +302,7 @@ async def process_select_book(
 # Этот хэндлер будет срабатывать на команду "/addbook"
 # начнется диалог с пользователем для добавления книги
 @router.message(Command(commands="addbook"))
-async def process_addbook_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_addbook_command(message: Message, user: User):
     user.add_book = {}
     text = f"{user.lexicon.lexicon['add_book']}\n\n{user.lexicon.lexicon['input_name_book']}"
     await message.answer(text=text, reply_markup=get_keyboard_close_addbook(user))
@@ -326,8 +311,7 @@ async def process_addbook_command(message: Message, books: DB_Books, users: DB_U
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # "отменить" во время добавления новой книги
 @router.message(IsCancelAddBook())
-async def process_add_book_cancel(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
+async def process_add_book_cancel(message: Message, user: User):
     if hasattr(user, "add_book"):
         del user.add_book
     await message.answer(
@@ -337,10 +321,7 @@ async def process_add_book_cancel(message: Message, books: DB_Books, users: DB_U
 
 # Хэндлер ввода названия книги и запрос Автора книги
 @router.message(IsAddBookInputAccess())
-async def process_add_book_input_access(
-    message: Message, books: DB_Books, users: DB_Users
-):
-    user = get_user(message, books, users)
+async def process_add_book_input_access(message: Message, user: User):
     access = message.text
     if access in [
         user.lexicon.lexicon["access_general_button"],
@@ -360,10 +341,7 @@ async def process_add_book_input_access(
 
 # Хэндлер ввода названия книги и запрос Автора книги
 @router.message(IsAddBookInputName())
-async def process_add_book_input_name(
-    message: Message, books: DB_Books, users: DB_Users
-):
-    user = get_user(message, books, users)
+async def process_add_book_input_name(message: Message, user: User):
     name = message.text
     user.add_book["name"] = name
     await message.answer(text=user.lexicon.lexicon["input_author_book"])
@@ -371,10 +349,7 @@ async def process_add_book_input_name(
 
 # Хэндлер ввода названия книги и запрос Автора книги
 @router.message(IsAddBookInputAuthor())
-async def process_add_book_input_author(
-    message: Message, books: DB_Books, users: DB_Users
-):
-    user = get_user(message, books, users)
+async def process_add_book_input_author(message: Message, user: User):
     author = message.text
     user.add_book["author"] = author
     await message.answer(
@@ -388,9 +363,8 @@ async def process_add_book_input_author(
 # а иначе сообщит пользователю об неизвестной команде
 @router.message(F.content_type == ContentType.DOCUMENT)
 async def process_add_book_input_document(
-    message: Message, books: DB_Books, users: DB_Users
+    message: Message, user: User, books: DB_Books
 ):
-    user = get_user(message, books, users)
     path_books = config.path_books
     file_name = message.document.file_name
     if hasattr(user, "add_book") and user.add_book != {}:
@@ -428,9 +402,7 @@ async def process_add_book_input_document(
 # и отправлять пользователю список сохраненных закладок,
 # если они есть или сообщение о том, что закладок нет
 @router.message(Command(commands="bookmarks"))
-async def process_bookmarks_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
-
+async def process_bookmarks_command(message: Message, user: User, books: DB_Books):
     if user.marks:
         text = user.lexicon.lexicon["/bookmarks"]
         keyboards = get_inline_btns_marks(user, books, user.marks)
@@ -443,9 +415,7 @@ async def process_bookmarks_command(message: Message, books: DB_Books, users: DB
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # "редактировать" под списком закладок
 @router.callback_query(F.data.in_(["edit_marks"]))
-async def process_edit_marks(callback: CallbackQuery, books: DB_Books, users: DB_Users):
-    user = get_user(callback, books, users)
-
+async def process_edit_marks(callback: CallbackQuery, user: User, books: DB_Books):
     if user.marks:
         text = user.lexicon.lexicon["/bookmarks"]
         keyboards = get_inline_btns_del_marks(user, books, user.marks)
@@ -459,8 +429,9 @@ async def process_edit_marks(callback: CallbackQuery, books: DB_Books, users: DB
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с закладкой из списка закладок к удалению
 @router.callback_query(F.data.startswith("del_mark"))
-async def process_del_mark(callback: CallbackQuery, books: DB_Books, users: DB_Users):
-    user = get_user(callback, books, users)
+async def process_del_mark(
+    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
+):
     data = [text.split("=") for text in callback.data.split(":")[1].split("&")]
     book_id = int(data[0][1])
     number_page = int(data[1][1])
@@ -479,8 +450,9 @@ async def process_del_mark(callback: CallbackQuery, books: DB_Books, users: DB_U
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с закладкой из списка закладок для просмотра
 @router.callback_query(F.data.startswith("show_page"))
-async def process_show_page(callback: CallbackQuery, books: DB_Books, users: DB_Users):
-    user = get_user(callback, books, users)
+async def process_show_page(
+    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
+):
     data = [text.split("=") for text in callback.data.split(":")[1].split("&")]
     book_id = int(data[0][1])
     number_page = int(data[1][1])
@@ -500,9 +472,7 @@ async def process_show_page(callback: CallbackQuery, books: DB_Books, users: DB_
 # Этот хэндлер будет срабатывать на команду "/language"
 # и показывать пользователю список локализаций
 @router.message(Command(commands="language"))
-async def process_language_command(message: Message, books: DB_Books, users: DB_Users):
-    user = get_user(message, books, users)
-
+async def process_language_command(message: Message, user: User):
     text = user.lexicon.lexicon["/language"]
     keyboards = get_inline_btns_languages(user)
     await message.answer(text=text, reply_markup=keyboards)
@@ -511,10 +481,7 @@ async def process_language_command(message: Message, books: DB_Books, users: DB_
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с языком из списка языков для выбора
 @router.callback_query(lambda callback: callback.data.startswith("select_language="))
-async def process_select_language(
-    callback: CallbackQuery, books: DB_Books, users: DB_Users
-):
-    user = get_user(callback, books, users)
+async def process_select_language(callback: CallbackQuery, user: User, users: DB_Users):
     language = callback.data.split("=")[1]
 
     if language == "EN":

@@ -139,7 +139,7 @@ LEXICON_EN: dict[str, str] = {
 }
 
 LEXICON_COMMANDS_EN: dict[str, str] = {
-    "/start": "Старт",
+    "/start": "Start",
     "/help": "Справка по работе бота",
     "/continue": "Продолжить чтение",
     "/beginning": "Перейти в начало книги",

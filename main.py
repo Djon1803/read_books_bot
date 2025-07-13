@@ -6,6 +6,8 @@ from config_data.config import Config, load_config
 from handlers import other, user_handlers
 from keyboards.menu_commands import set_main_menu
 from db.db import DB_Books, DB_Users
+from middlewares.user import UserMiddleware
+
 # Инициализируем логгер
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,10 @@ async def main() -> None:
     users = DB_Users(config.users_db)
     logger.info("Total books: %d", len(books.books))
     logger.info("Total users: %d", len(users.users))
+
+    # Здесь будем регистрировать миддлвари
+    dp.message.outer_middleware(UserMiddleware())
+    dp.callback_query.outer_middleware(UserMiddleware())
 
     # Сохраняем готовую книгу и "базу данных" в `workflow_data`
     dp.workflow_data.update(books=books, users=users)
