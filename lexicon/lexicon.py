@@ -3,14 +3,14 @@ LEXICON_RU: dict[str, str] = {
     "/help": """Это бот-читалка: 
     
     Доступные команды: 
-    /start - Основное меню
+    /start - Старт
     /help - Справка по работе бота
     /continue - Продолжить чтение
     /beginning - Перейти в начало книги
     /bookmarks - Посмотреть список закладок
     /books - Посмотреть список книг
     /addbook - Добавление книги
-    /language - Выбор зыка""",
+    /language - Выбор языка""",
     "/bookmarks": "Это список ваших закладок:",
     "page_next": ">>",
     "page_back": "<<",
@@ -66,7 +66,7 @@ LEXICON_RU: dict[str, str] = {
 }
 
 LEXICON_COMMANDS_RU: dict[str, str] = {
-    "/start": "Основное меню",
+    "/start": "Старт",
     "/help": "Справка по работе бота",
     "/continue": "Продолжить чтение",
     "/beginning": "Перейти в начало книги",
@@ -81,7 +81,7 @@ LEXICON_EN: dict[str, str] = {
     "/help": """This is a reading bot:
 
     Available commands:
-    /start - Main menu
+    /start - Старт
     /help - Help on how to use the bot
     /continue - Continue reading
     /beginning - Go to the beginning of the book
@@ -139,7 +139,7 @@ LEXICON_EN: dict[str, str] = {
 }
 
 LEXICON_COMMANDS_EN: dict[str, str] = {
-    "/start": "Основное меню",
+    "/start": "Старт",
     "/help": "Справка по работе бота",
     "/continue": "Продолжить чтение",
     "/beginning": "Перейти в начало книги",
