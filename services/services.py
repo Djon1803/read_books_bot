@@ -1,6 +1,8 @@
 from aiogram.types import Message
 from db.db import Book, DB_Books, User, DB_Users
 
+import logging
+logger = logging.getLogger(__name__)
 
 # Внесение в базу и получение из базы пользователя
 def get_user(message: Message, books: DB_Books, users: DB_Users):
@@ -12,4 +14,5 @@ def get_user(message: Message, books: DB_Books, users: DB_Users):
         print(user_id, username, books.get_book(book_id).name)
         user = User(user_id, username, book_id, 1, False, [], [], {str(book_id): 1})
         users.add(user)
+        logger.info('New user: %s', user)
     return user

@@ -8,6 +8,10 @@ from aiogram.types import (
     ReplyKeyboardRemove,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from keyboards.books import (
     get_inline_btns_books,
     get_inline_btns_load_books,
@@ -49,7 +53,6 @@ router = Router()
 @router.message(CommandStart())
 async def process_start_command(message: Message, books: DB_Books, users: DB_Users):
     user = get_user(message, books, users)
-    print(users.users)
     await message.answer(text=user.lexicon.lexicon["/start"])
 
 
@@ -226,6 +229,8 @@ async def process_load_books(callback: CallbackQuery, books: DB_Books, users: DB
 async def process_del_book(callback: CallbackQuery, books: DB_Books, users: DB_Users):
     user = get_user(callback, books, users)
     book_id = int(callback.data.split("=")[1])
+    book = books.get_book(book_id)
+    logger.info("Del book: %s", book)
     users.clear_book(book_id)
     remove(books.get_book(book_id).path)
     books.del_book(book_id)
@@ -307,7 +312,30 @@ async def process_addbook_command(message: Message, books: DB_Books, users: DB_U
     user = get_user(message, books, users)
     user.add_book = {}
     text = f"{user.lexicon.lexicon['add_book']}\n\n{user.lexicon.lexicon['input_name_book']}"
-    await message.answer(text=text)
+    await message.answer(text=text, reply_markup=get_keyboard_close_addbook(user))
+
+
+# Хэндлер ввода названия книги и запрос Автора книги
+@router.message(IsAddBookInputAccess())
+async def process_add_book_input_access(
+    message: Message, books: DB_Books, users: DB_Users
+):
+    user = get_user(message, books, users)
+    access = message.text
+    if access in [
+        user.lexicon.lexicon["access_general_button"],
+        user.lexicon.lexicon["access_personal_button"],
+    ]:
+        if access == user.lexicon.lexicon["access_general_button"]:
+            user.add_book["access"] = "general"
+        else:
+            user.add_book["access"] = "personal"
+        await message.answer(
+            text=user.lexicon.lexicon["input_file_book"],
+            reply_markup=get_keyboard_close_addbook(user),
+        )
+    else:
+        await message.answer(text=user.lexicon.lexicon["select_access"])
 
 
 # Хэндлер ввода названия книги и запрос Автора книги
@@ -335,30 +363,6 @@ async def process_add_book_input_author(
     )
 
 
-# Хэндлер ввода названия книги и запрос Автора книги
-@router.message(IsAddBookInputAccess())
-async def process_add_book_input_access(
-    message: Message, books: DB_Books, users: DB_Users
-):
-    user = get_user(message, books, users)
-    access = message.text
-    print("access book", access)
-    if access in [
-        user.lexicon.lexicon["access_general_button"],
-        user.lexicon.lexicon["access_personal_button"],
-    ]:
-        if access == user.lexicon.lexicon["access_general_button"]:
-            user.add_book["access"] = "general"
-        else:
-            user.add_book["access"] = "personal"
-        await message.answer(
-            text=user.lexicon.lexicon["input_file_book"],
-            reply_markup=ReplyKeyboardRemove(),
-        )
-    else:
-        await message.answer(text=user.lexicon.lexicon["select_access"])
-
-
 # Этот хэндлер будет срабатывать отправку файлов
 # Если это при добавление книги то переданный файл сохранится в папке
 # а иначе сообщит пользователю об неизвестной команде
@@ -377,17 +381,17 @@ async def process_add_book_input_document(
             file_path = path_books + file_name
             await message.bot.download(message.document.file_id, file_path)
             book_id = books.books[-1].id + 1 if books.books else 1
-            books.add(
-                Book(
-                    id=book_id,
-                    name=user.add_book["name"],
-                    path=file_path,
-                    author=user.add_book["author"],
-                    owner=user.id,
-                    access=user.add_book["access"],
-                    date_load=date_load,
-                )
+            book = Book(
+                id=book_id,
+                name=user.add_book["name"],
+                path=file_path,
+                author=user.add_book["author"],
+                owner=user.id,
+                access=user.add_book["access"],
+                date_load=date_load,
             )
+            books.add(book)
+            logger.info("Add book: %s", book)
             text = user.lexicon.lexicon["added_book"]
             del user.add_book
             books.save()
