@@ -3,7 +3,7 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
-from handlers import other, user_handlers
+from handlers import user, book, mark, other 
 from keyboards.menu_commands import set_main_menu
 from db.db import DB_Books, DB_Users
 from middlewares.user import UserMiddleware
@@ -47,7 +47,9 @@ async def main() -> None:
     await set_main_menu(bot)
 
     # Регистриуем роутеры в диспетчере
-    dp.include_router(user_handlers.router)
+    dp.include_router(user.router)
+    dp.include_router(book.router)
+    dp.include_router(mark.router)
     dp.include_router(other.router)
 
     # Пропускаем накопившиеся апдейты и запускаем polling

@@ -1,7 +1,7 @@
 from aiogram.filters import BaseFilter
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 
-from db.db import DB_Books, DB_Users, User
+from db.db import User
 
 
 class IsAddBookInputName(BaseFilter):
