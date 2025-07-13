@@ -6,7 +6,12 @@ from aiogram.types import (
     InlineKeyboardMarkup,
 )
 
-from db.db import Book, User, DB_Books, DB_Users
+from db.db import Book, User
+from callback_factory.book import (
+    DelBookCallbackFactory,
+    LoadBookCallbackFactory,
+    SelectBookCallbackFactory,
+)
 
 
 # Формирование инлайн клавиатуры для выбора книг
@@ -15,7 +20,8 @@ def get_inline_btns_books(user: User, books: list[Book]) -> InlineKeyboardMarkup
     lst = [
         [
             InlineKeyboardButton(
-                text=book.name, callback_data="select_book=" + str(book.id)
+                text=book.name,
+                callback_data=SelectBookCallbackFactory(id=book.id).pack(),
             )
         ]
         for book in books
@@ -53,7 +59,7 @@ def get_inline_btns_del_books(user: User, books: list[Book]) -> InlineKeyboardMa
         [
             InlineKeyboardButton(
                 text=f"{user.lexicon.lexicon['del']} {book.name}",
-                callback_data=f"del_book={book.id}",
+                callback_data=DelBookCallbackFactory(id=book.id).pack(),
             ),
         ]
         for book in books
@@ -79,7 +85,7 @@ def get_inline_btns_load_books(user: User, books: list[Book]) -> InlineKeyboardM
         [
             InlineKeyboardButton(
                 text=f"{user.lexicon.lexicon['download']} {book.name}",
-                callback_data=f"load_book={book.id}",
+                callback_data=LoadBookCallbackFactory(id=book.id).pack(),
             ),
         ]
         for book in books
@@ -103,7 +109,7 @@ def get_keyboard_close_addbook(
     user: User,
 ) -> ReplyKeyboardMarkup:
     # Создаем объекты инлайн-кнопок
-    btn = KeyboardButton(text=user.lexicon.lexicon['cancel_add_book_button'])
+    btn = KeyboardButton(text=user.lexicon.lexicon["cancel_add_book_button"])
 
     # Создаем объект инлайн-клавиатуры
     keyboard = ReplyKeyboardMarkup(
@@ -118,8 +124,8 @@ def get_keyboard_input_access(
     user: User,
 ) -> ReplyKeyboardMarkup:
     # Создаем объекты инлайн-кнопок
-    btn_1 = KeyboardButton(text=user.lexicon.lexicon['access_general_button'])
-    btn_2 = KeyboardButton(text=user.lexicon.lexicon['access_personal_button'])
+    btn_1 = KeyboardButton(text=user.lexicon.lexicon["access_general_button"])
+    btn_2 = KeyboardButton(text=user.lexicon.lexicon["access_personal_button"])
 
     # Создаем объект инлайн-клавиатуры
     keyboard = ReplyKeyboardMarkup(

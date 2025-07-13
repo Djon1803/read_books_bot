@@ -5,6 +5,8 @@ from aiogram.types import (
 
 from db.db import DB_Books, User
 
+from callback_factory.mark import DelMarkCallbackFactory, ShowMarkCallbackFactory
+
 
 # Формирование инлайн клавиатуры для просмотра закладок
 def get_inline_btns_marks(
@@ -18,7 +20,9 @@ def get_inline_btns_marks(
             temp = [
                 InlineKeyboardButton(
                     text=f'{book.name} [{mark["number_page"]}] - {book.get_page(mark["number_page"])[:100]}',
-                    callback_data=f'show_page:book_id={mark["book_id"]}&number_page={mark["number_page"]}',
+                    callback_data=ShowMarkCallbackFactory(
+                        book_id=mark["book_id"], number_page=mark["number_page"]
+                    ).pack(),
                 )
             ]
             btns.append(temp)
@@ -55,7 +59,9 @@ def get_inline_btns_del_marks(
             temp = [
                 InlineKeyboardButton(
                     text=f'{user.lexicon.lexicon["del"]} {book.name} [{mark["number_page"]}] - {book.get_page(mark["number_page"])[:100]}',
-                    callback_data=f'del_mark:book_id={mark["book_id"]}&number_page={mark["number_page"]}',
+                    callback_data=DelMarkCallbackFactory(
+                        book_id=mark["book_id"], number_page=mark["number_page"]
+                    ).pack(),
                 )
             ]
             btns.append(temp)

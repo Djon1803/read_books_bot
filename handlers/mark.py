@@ -12,6 +12,7 @@ from keyboards.bookmarks import get_inline_btns_marks, get_inline_btns_del_marks
 
 from db.db import Book, DB_Books, User, DB_Users
 
+from callback_factory.mark import DelMarkCallbackFactory, ShowMarkCallbackFactory
 
 from config_data.config import Config, load_config
 
@@ -60,13 +61,16 @@ async def process_edit_marks(callback: CallbackQuery, user: User, books: DB_Book
 
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с закладкой из списка закладок к удалению
-@router.callback_query(F.data.startswith("del_mark"))
+@router.callback_query(DelMarkCallbackFactory.filter())
 async def process_del_mark(
-    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
+    callback: CallbackQuery,
+    user: User,
+    books: DB_Books,
+    users: DB_Users,
+    callback_data: DelMarkCallbackFactory,
 ):
-    data = [text.split("=") for text in callback.data.split(":")[1].split("&")]
-    book_id = int(data[0][1])
-    number_page = int(data[1][1])
+    book_id = callback_data.book_id
+    number_page = callback_data.number_page
     user.del_mark(book_id, number_page)
     users.save()
 
@@ -81,13 +85,16 @@ async def process_del_mark(
 
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с закладкой из списка закладок для просмотра
-@router.callback_query(F.data.startswith("show_page"))
+@router.callback_query(ShowMarkCallbackFactory.filter())
 async def process_show_page(
-    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
+    callback: CallbackQuery,
+    user: User,
+    books: DB_Books,
+    users: DB_Users,
+    callback_data: ShowMarkCallbackFactory,
 ):
-    data = [text.split("=") for text in callback.data.split(":")[1].split("&")]
-    book_id = int(data[0][1])
-    number_page = int(data[1][1])
+    book_id = callback_data.book_id
+    number_page = callback_data.number_page
     book = books.get_book(book_id)
     if book:
         page = book.get_page(number_page)

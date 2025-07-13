@@ -35,6 +35,12 @@ from filters.filters import (
     IsCancelAddBook,
 )
 
+from callback_factory.book import (
+    DelBookCallbackFactory,
+    LoadBookCallbackFactory,
+    SelectBookCallbackFactory,
+)
+
 from config_data.config import Config, load_config
 
 config: Config = load_config()
@@ -179,11 +185,15 @@ async def process_load_books(callback: CallbackQuery, user: User, books: DB_Book
 
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с книгой из списка книг для удаления
-@router.callback_query(F.data.startswith("del_book="))
+@router.callback_query(DelBookCallbackFactory.filter())
 async def process_del_book(
-    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
+    callback: CallbackQuery,
+    user: User,
+    books: DB_Books,
+    users: DB_Users,
+    callback_data: DelBookCallbackFactory,
 ):
-    book_id = int(callback.data.split("=")[1])
+    book_id = callback_data.id
     book = books.get_book(book_id)
     logger.info("Del book: %s", book)
     users.clear_book(book_id)
@@ -207,9 +217,14 @@ async def process_del_book(
 
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с книгой из списка книг для скачивания
-@router.callback_query(F.data.startswith("load_book="))
-async def process_load_book(callback: CallbackQuery, user: User, books: DB_Books):
-    book_id = int(callback.data.split("=")[1])
+@router.callback_query(LoadBookCallbackFactory.filter())
+async def process_load_book(
+    callback: CallbackQuery,
+    user: User,
+    books: DB_Books,
+    callback_data: LoadBookCallbackFactory,
+):
+    book_id = callback_data.id
     book = books.get_book(book_id)
     book_path = abspath(book.path)
     if book and exists(book.path):
@@ -237,11 +252,15 @@ async def process_load_book(callback: CallbackQuery, user: User, books: DB_Books
 
 # Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
 # с книгой из списка книг для выбора
-@router.callback_query(F.data.startswith("select_book="))
+@router.callback_query(SelectBookCallbackFactory.filter())
 async def process_select_book(
-    callback: CallbackQuery, user: User, books: DB_Books, users: DB_Users
+    callback: CallbackQuery,
+    user: User,
+    books: DB_Books,
+    users: DB_Users,
+    callback_data: SelectBookCallbackFactory,
 ):
-    book_id = int(callback.data.split("=")[1])
+    book_id = callback_data.id
     book = books.get_book(book_id)
     if book:
         user.id_select_book = book_id
