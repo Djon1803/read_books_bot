@@ -1,6 +1,6 @@
 # Получение из текста страницу
 def _get_part_text(text: str, start: int, page_size: int):
-    text = text[start:]
+    text = text[start:page_size]
     len_text = len(text)
     last_char = 0
     for i in range(len_text):
@@ -11,6 +11,8 @@ def _get_part_text(text: str, start: int, page_size: int):
                 last_char = i
             else:
                 break
+    else:
+        last_char = len_text
     page = text[: last_char + 1]
     return page, len(page)
 

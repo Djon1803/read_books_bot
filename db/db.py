@@ -133,9 +133,11 @@ class User:
         self.reading[book_id] = number_page
 
     def del_reading_book(self, book_id: int):
-        for key in self.reading:
-            if key == book_id:
-                del self.reading[key]
+        d = {}
+        for key, value in self.reading.items():
+            if key != str(book_id):
+                d[key] = value
+        self.reading = d
 
     @property
     def language(self):
@@ -173,6 +175,12 @@ class DB_Users:
 
             user.del_reading_book(book_id)
 
+            if user.id_select_book == book_id:
+                keys = list(user.reading.keys())
+                if keys:
+                    user.id_select_book = int(keys[-1])
+                else:
+                    user.id_select_book = None
     @staticmethod
     def load(path: str) -> list[User]:
         if not exists(path):

@@ -83,6 +83,7 @@ async def process_beginning_command(message: Message, books: DB_Books, users: DB
     if book:
         index_page = 1
         user.reading[str(book.id)] = index_page
+        users.save()
         page = book.get_page(index_page)
         keyboards = get_inline_read_book(user, book, index_page)
         await message.answer(text=page, reply_markup=keyboards)
@@ -99,6 +100,7 @@ async def process_page_add_mark(
 ):
     user = get_user(callback, books, users)
     user.add_mark(user.id_select_book, user.reading[str(user.id_select_book)])
+    users.save()
     await callback.answer(text=user.lexicon.lexicon["add_mark"])
 
 
@@ -116,6 +118,7 @@ async def process_page_back_press(
         if this_index > 1:
             index_page -= 1
             user.reading[str(user.id_select_book)] = index_page
+            users.save()
             page = book.get_page(index_page)
             keyboards = get_inline_read_book(user, book, index_page)
             await callback.message.edit_text(text=page, reply_markup=keyboards)
@@ -139,6 +142,7 @@ async def process_page_next_press(
         if this_index < book.count_pages:
             index_page += 1
             user.reading[str(user.id_select_book)] = index_page
+            users.save()
             page = book.get_page(index_page)
             keyboards = get_inline_read_book(user, book, index_page)
             await callback.message.edit_text(text=page, reply_markup=keyboards)
@@ -155,9 +159,9 @@ async def process_page_next_press(
 async def process_continue_command(message: Message, books: DB_Books, users: DB_Users):
     user = get_user(message, books, users)
     book = books.get_book(user.id_select_book)
-    index_page = user.reading[str(user.id_select_book)]
-
+    
     if book:
+        index_page = user.reading[str(user.id_select_book)]
         page = book.get_page(index_page)
         keyboards = get_inline_read_book(user, book, index_page)
         await message.answer(text=page, reply_markup=keyboards)
@@ -234,6 +238,8 @@ async def process_del_book(callback: CallbackQuery, books: DB_Books, users: DB_U
     users.clear_book(book_id)
     remove(books.get_book(book_id).path)
     books.del_book(book_id)
+    books.save()
+    users.save()
 
     lst_books = [
         book
@@ -297,6 +303,8 @@ async def process_select_book(
             index_page = 1
             user.reading[str(book_id)] = index_page
 
+        users.save()
+
         page = book.get_page(index_page)
         keyboards = get_inline_read_book(user, book, index_page)
         await callback.message.answer(text=page, reply_markup=keyboards)
@@ -313,6 +321,18 @@ async def process_addbook_command(message: Message, books: DB_Books, users: DB_U
     user.add_book = {}
     text = f"{user.lexicon.lexicon['add_book']}\n\n{user.lexicon.lexicon['input_name_book']}"
     await message.answer(text=text, reply_markup=get_keyboard_close_addbook(user))
+
+
+# Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
+# "отменить" во время добавления новой книги
+@router.message(IsCancelAddBook())
+async def process_add_book_cancel(message: Message, books: DB_Books, users: DB_Users):
+    user = get_user(message, books, users)
+    if hasattr(user, "add_book"):
+        del user.add_book
+    await message.answer(
+        text="Вы вышли из режима добавления книги", reply_markup=ReplyKeyboardRemove()
+    )
 
 
 # Хэндлер ввода названия книги и запрос Автора книги
@@ -404,18 +424,6 @@ async def process_add_book_input_document(
         await message.answer(text=text)
 
 
-# Этот хэндлер будет срабатывать на нажатие инлайн-кнопки
-# "отменить" во время добавления новой книги
-@router.message(IsCancelAddBook())
-async def process_add_book_cancel(message: Message):
-    user = get_user(message)
-    if hasattr(user, "add_book"):
-        del user.add_book
-    await message.answer(
-        text="Вы вышли из режима добавления книги", reply_markup=ReplyKeyboardRemove()
-    )
-
-
 # Этот хэндлер будет срабатывать на команду "/bookmarks"
 # и отправлять пользователю список сохраненных закладок,
 # если они есть или сообщение о том, что закладок нет
@@ -457,6 +465,7 @@ async def process_del_mark(callback: CallbackQuery, books: DB_Books, users: DB_U
     book_id = int(data[0][1])
     number_page = int(data[1][1])
     user.del_mark(book_id, number_page)
+    users.save()
 
     if user.marks:
         keyboards = get_inline_btns_del_marks(user, books, user.marks)
@@ -480,6 +489,7 @@ async def process_show_page(callback: CallbackQuery, books: DB_Books, users: DB_
         page = book.get_page(number_page)
         user.id_select_book = book_id
         user.reading[str(book_id)] = number_page
+        users.save()
         keyboards = get_inline_read_book(user, book, number_page)
         await callback.message.answer(text=page, reply_markup=keyboards)
         await callback.answer()
@@ -513,7 +523,6 @@ async def process_select_language(
         user.language = "RU"
 
     users.save()
-    books.save()
 
     text = user.lexicon.lexicon["/language"]
     keyboards = get_inline_btns_languages(user)
