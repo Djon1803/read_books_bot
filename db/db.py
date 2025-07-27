@@ -57,7 +57,7 @@ class DB_Books:
                 f.truncate()
                 f.write(json.dumps([], ensure_ascii=False, indent=4))
                 return []
-            
+
         with open(path, "r+", encoding="utf-8") as f:
             content = f.read()
             if content:
@@ -105,6 +105,8 @@ class User:
     id_select_book: int
     _language: str = "RU"
     admin: bool = False
+    book_wisdom: bool = False
+    page_number_book_wisdom: int = 1
     books_read: list[int] = field(default_factory=list)
     marks: list[dict] = field(default_factory=list)
     reading: dict[str:int] = field(default_factory=dict)
@@ -181,6 +183,7 @@ class DB_Users:
                     user.id_select_book = int(keys[-1])
                 else:
                     user.id_select_book = None
+
     @staticmethod
     def load(path: str) -> list[User]:
         if not exists(path):
@@ -201,6 +204,8 @@ class DB_Users:
                         book["id_select_book"],
                         book["language"],
                         book["admin"],
+                        book["book_wisdom"],
+                        book["page_number_book_wisdom"],
                         book["books_read"],
                         book["marks"],
                         book["reading"],
@@ -219,6 +224,8 @@ class DB_Users:
                 "books_read": user.books_read,
                 "marks": user.marks,
                 "admin": user.admin,
+                "book_wisdom": user.book_wisdom,
+                "page_number_book_wisdom": user.page_number_book_wisdom,
                 "reading": user.reading,
             }
             for user in users
@@ -230,4 +237,3 @@ class DB_Users:
             f.seek(0)
             f.truncate()
             f.write(json.dumps(users, ensure_ascii=False, indent=4))
-

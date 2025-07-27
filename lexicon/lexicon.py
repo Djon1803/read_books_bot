@@ -63,6 +63,8 @@ LEXICON_RU: dict[str, str] = {
     "/language": "Языки: ",
     "ru": " Русский 🇷🇺",
     "en": " English 🇬🇧",
+    "wisdom": "✨ Мудрость дня\nАктивные подписки:",
+    "maktub": 'Пауло Коэльо "МАКТУБ"',
 }
 
 LEXICON_COMMANDS_RU: dict[str, str] = {
@@ -73,6 +75,7 @@ LEXICON_COMMANDS_RU: dict[str, str] = {
     "/bookmarks": "Посмотреть список закладок",
     "/books": "Посмотреть список книг",
     "/addbook": "Добавление книги",
+    "/wisdom": "Ежедневные вдохновляющие истории",
     "/language": "Выбор языка",
 }
 
@@ -136,6 +139,8 @@ LEXICON_EN: dict[str, str] = {
     "/language": "Languages:",
     "ru": " Русский 🇷🇺",
     "en": " English 🇬🇧",
+    "wisdom": "✨ Wisdom of the day\nActive subscriptions:",
+    "maktub": 'Paulo Coelho "MAKTUB"',
 }
 
 LEXICON_COMMANDS_EN: dict[str, str] = {
@@ -146,6 +151,7 @@ LEXICON_COMMANDS_EN: dict[str, str] = {
     "/bookmarks": "Посмотреть список закладок",
     "/books": "Посмотреть список книг",
     "/addbook": "Добавление книги",
+    "/wisdom": "Daily Inspirational Stories",
     "/language": "Выбор языка",
 }
 
