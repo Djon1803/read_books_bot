@@ -58,13 +58,18 @@ LEXICON_RU: dict[str, str] = {
     "info_book_author": "Автор:",
     "info_book_access": "Доступ:",
     "info_book_pages": "Кол-во страниц:",
-    "info_book_pages": "Кол-во страниц:",
     "select": "✅",
+    "not_selected": "⠀ ",
+    "edit": "✏️",
     "/language": "Языки: ",
     "ru": " Русский 🇷🇺",
     "en": " English 🇬🇧",
     "wisdom": "✨ Мудрость дня\nАктивные подписки:",
     "maktub": 'Пауло Коэльо "МАКТУБ"',
+
+    "admin_users": "Пользователи", 
+    "admin_books": "Книги", 
+    "admin_wisdoms": "Постраничные истории",
 }
 
 LEXICON_COMMANDS_RU: dict[str, str] = {
@@ -136,11 +141,17 @@ LEXICON_EN: dict[str, str] = {
     "info_book_access": "Access:",
     "info_book_pages": "Number of pages:",
     "select": "✅",
+    "not_selected": "⠀ ",
+    "edit": "✏️",
     "/language": "Languages:",
     "ru": " Русский 🇷🇺",
     "en": " English 🇬🇧",
     "wisdom": "✨ Wisdom of the day\nActive subscriptions:",
     "maktub": 'Paulo Coelho "MAKTUB"',
+
+    "admin_users": "Users",
+    "admin_books": "Books",
+    "admin_wisdoms": "Paged Stories",
 }
 
 LEXICON_COMMANDS_EN: dict[str, str] = {

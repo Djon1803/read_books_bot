@@ -96,8 +96,7 @@ def seconds_until(hour: int, minute: int = 0, second: int = 0):
 async def daily_notification_page(bot: Bot, users: DB_Users, maktub: DB_Wisdom):
     message_max_len = 4096
     while True:
-        await sleep(seconds_until(19, 0, 0))
-        # await sleep(20)
+        await sleep(seconds_until(11, 0, 0))
         for user in users.users:
             await sleep(1)
 

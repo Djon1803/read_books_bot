@@ -23,7 +23,7 @@ def get_inline_btns_wisdom(user: User) -> InlineKeyboardMarkup:
         btns.append(
             [
                 InlineKeyboardButton(
-                    text=f"{user.lexicon.lexicon['del']} {user.lexicon.lexicon['maktub']}",
+                    text=f"{user.lexicon.lexicon['not_selected']} {user.lexicon.lexicon['maktub']}",
                     callback_data="wisdom_true",
                 )
             ]
