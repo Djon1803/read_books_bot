@@ -114,7 +114,7 @@ async def process_select_book(
     callback_data: SetWisdomCallbackFactory,
 ):
     show_user = users.get_user(callback_data.user_id)
-    user.book_wisdom = callback_data.value
+    show_user.book_wisdom = callback_data.value
     await callback.answer()
     await callback.message.edit_text(
         text=show_user.username,
@@ -130,7 +130,7 @@ async def process_select_book(
     callback_data: SetlanguageCallbackFactory,
 ):
     show_user = users.get_user(callback_data.user_id)
-    user.language = callback_data.value
+    show_user.language = callback_data.value
     await callback.answer()
     await callback.message.edit_text(
         text=show_user.username,
