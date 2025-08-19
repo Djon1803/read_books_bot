@@ -7,6 +7,7 @@ from aiogram.types import (
     FSInputFile,
     ReplyKeyboardRemove,
 )
+from aiogram.exceptions import TelegramForbiddenError
 
 import logging
 
@@ -96,7 +97,7 @@ def seconds_until(hour: int, minute: int = 0, second: int = 0):
 async def daily_notification_page(bot: Bot, users: DB_Users, maktub: DB_Wisdom):
     message_max_len = 4096
     while True:
-        await sleep(seconds_until(11, 0, 0))
+        await sleep(seconds_until(14, 0, 0))
         for user in users.users:
             await sleep(1)
 
@@ -112,23 +113,27 @@ async def daily_notification_page(bot: Bot, users: DB_Users, maktub: DB_Wisdom):
                 if number_page == len(maktub.pages):
                     number_page = None
 
-                user.page_number_book_wisdom = number_page
-
                 photo_file = FSInputFile(path=abspath(page.photo))
                 text = page.text
                 first_text, len_text = get_part_text(text, 0, 1024)
+                
+                try:
+                    await bot.send_photo(
+                        chat_id=user.id,
+                        photo=photo_file,
+                        caption=first_text,
+                        parse_mode="HTML",
+                    )
+                    if len(text) > 1024:
+                        text = text[len_text:]
+                        pages = prepare_text(text, message_max_len)
+                        for i in pages:
+                            await bot.send_message(
+                                chat_id=user.id, text=pages[i], parse_mode="HTML"
+                            )
 
-                await bot.send_photo(
-                    chat_id=user.id,
-                    photo=photo_file,
-                    caption=first_text,
-                    parse_mode="HTML",
-                )
-                if len(text) > 1024:
-                    text = text[len_text:]
-                    pages = prepare_text(text, message_max_len)
-                    for i in pages:
-                        await bot.send_message(
-                            chat_id=user.id, text=pages[i], parse_mode="HTML"
-                        )
+                    user.page_number_book_wisdom = number_page
+                except TelegramForbiddenError:
+                    user.book_wisdom = False
+
         users.save()
