@@ -49,7 +49,7 @@ async def process_any_message_when_lang(
 
 
 # Этот хэндлер будет срабатывать на команду /lang
-@router.message(Command(commands="lang"))
+@router.message(Command(commands="language"))
 async def process_lang_command(
     message: Message,
     conn: AsyncConnection,
@@ -62,7 +62,7 @@ async def process_lang_command(
     user_lang = user.language
 
     msg = await message.answer(
-        text=lexicon.get("/lang"),
+        text=lexicon.get("/language"),
         reply_markup=get_lang_settings_kb(
             lexicon=lexicon, locales=locales, checked=user_lang
         ),

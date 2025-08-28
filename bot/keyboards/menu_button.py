@@ -12,7 +12,7 @@ def get_main_menu_commands(lexicon: dict[str, str], role: UserRole):
             BotCommand(command="/books", description=lexicon.get("/books")),
             BotCommand(command="/addbook", description=lexicon.get("/addbook")),
             BotCommand(command="/wisdom", description=lexicon.get("/wisdom")),
-            BotCommand(command="/lang", description=lexicon.get("/lang_description")),
+            BotCommand(command="/language", description=lexicon.get("/lang")),
             BotCommand(command="/help", description=lexicon.get("/help_description")),
         ]
     elif role == UserRole.ADMIN:
@@ -24,7 +24,7 @@ def get_main_menu_commands(lexicon: dict[str, str], role: UserRole):
             BotCommand(command="/books", description=lexicon.get("/books")),
             BotCommand(command="/addbook", description=lexicon.get("/addbook")),
             BotCommand(command="/wisdom", description=lexicon.get("/wisdom")),
-            BotCommand(command="/lang", description=lexicon.get("/lang_description")),
+            BotCommand(command="/language", description=lexicon.get("/lang")),
             BotCommand(command="/help", description=lexicon.get("/help_description")),
             BotCommand(command="/ban", description=lexicon.get("/ban_description")),
             BotCommand(command="/unban", description=lexicon.get("/unban_description")),

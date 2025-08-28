@@ -1,25 +1,4 @@
 EN: dict[str, str] = {
-    "/start": "Hello!\n\nI am the echo bot to demonstrate the work of a relational "
-    "database <b>PostgreSQL</b> in conjunction with <code>aiogram</code>!\n\n"
-    "If you want, you can send me something or send a command /help",
-    "/help": "I am a bot that was created to demonstrate the collaboration of a relational "
-    "database <b>PostgreSQL</b> and the library <code>aiogram</code>. I can save the "
-    "selected interface language, as well as send you back your messages!\n\n"
-    "Available Commands:\n\n"
-    "/start - restarting the bot\n"
-    "/lang - set the interface language\n"
-    "/help - view this help\n",
-    "/help_admin": "I am a bot that was created to demonstrate the collaboration of a relational "
-    "database <b>PostgreSQL</b> and the library <code>aiogram</code>. I can save the "
-    "selected interface language, as well as send you back your messages!\n\n"
-    "Your role in the system is <code>ADMIN</code> and therefore an extended "
-    "list of commands is available:\n\n"
-    "/start - restarting the bot\n"
-    "/lang - set the interface language\n"
-    "/help - view this help\n"
-    "/ban - ban the user\n"
-    "/unban - unban the user\n"
-    "/statistics - view user activity statistics",
     "/lang": "Select a language",
     "no_echo": "This type of update is not supported by the send_copy method.",
     "ru": "🇷🇺 Russian",
@@ -116,7 +95,6 @@ EN: dict[str, str] = {
     "admin_books": "Books",
     "admin_wisdoms": "Paged Stories",
     "/start": "Start",
-    "/help": "Справка по работе бота",
     "/continue": "Продолжить чтение",
     "/beginning": "Перейти в начало книги",
     "/bookmarks": "Посмотреть список закладок",

@@ -38,7 +38,7 @@ router.message.filter(UserRoleFilter(UserRole.ADMIN))
 # Этот хэндлер будет срабатывать на команду /help для пользователя с ролью `UserRole.ADMIN`
 @router.message(Command("help"))
 async def process_admin_help_command(message: Message, lexicon: dict):
-    await message.answer(text=lexicon.get("/help_admin"))
+    await message.answer(text=lexicon.get("/help"))
 
 
 @router.message(Command(commands="users"))
@@ -80,10 +80,10 @@ id: {u.user_id}
 язык: {u.language}"""
         text_users.append(temp)
 
-    BATCH_SIZE = 10
+    BATCH_SIZE = 15
     for i in range(0, len(text_users), BATCH_SIZE):
-        batch = text_users[i:i+BATCH_SIZE]
-        await message.answer(text='\n\n'.join(batch))
+        batch = text_users[i : i + BATCH_SIZE]
+        await message.answer(text="\n\n".join(batch))
 
 
 # Этот хэндлер будет срабатывать на команду "/save"
