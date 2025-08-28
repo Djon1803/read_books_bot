@@ -79,7 +79,11 @@ id: {u.user_id}
 время отправки: MSK {u.time_send_wisdom}
 язык: {u.language}"""
         text_users.append(temp)
-    await message.answer(text=f"Пользователи:\n\n{'\n\n'.join(text_users)}")
+
+    BATCH_SIZE = 10
+    for i in range(0, len(text_users), BATCH_SIZE):
+        batch = text_users[i:i+BATCH_SIZE]
+        await message.answer(text='\n\n'.join(batch))
 
 
 # Этот хэндлер будет срабатывать на команду "/save"
