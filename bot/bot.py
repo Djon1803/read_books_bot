@@ -6,7 +6,7 @@ import psycopg_pool
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.handlers.admin import router as admin_router
 from bot.handlers.settings import router as settings_router
@@ -39,15 +39,7 @@ async def on_startup(bot: Bot, conn: AsyncConnection, time: list[int, int, int])
 async def main(config: Config) -> None:
     logger.info("Starting bot...")
     # Инициализируем хранилище
-    storage = RedisStorage(
-        redis=Redis(
-            host=config.redis.host,
-            port=config.redis.port,
-            db=config.redis.db,
-            password=config.redis.password,
-            username=config.redis.username,
-        )
-    )
+    storage = MemoryStorage()
 
     # Инициализируем бот и диспетчер
     bot = Bot(
