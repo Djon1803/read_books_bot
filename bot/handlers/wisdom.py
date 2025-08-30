@@ -27,6 +27,8 @@ from bot.services.book import prepare_text, get_part_text
 from config.config import Config, load_config
 
 import datetime
+
+from psycopg_pool import AsyncConnectionPool
 from psycopg import AsyncConnection
 
 config: Config = load_config()
@@ -91,69 +93,81 @@ def seconds_until(hour: int, minute: int = 0, second: int = 0):
     return int(delta.total_seconds())
 
 
+
 async def daily_notification_page(
-    bot: Bot, conn: AsyncConnection, time: list[int, int, int]
+    bot: Bot, db_pool: AsyncConnectionPool, time: list[int, int, int]
 ):
-    users: list[User] = await UserDAO(conn).get_all()
+    if db_pool is None:
+        logger.error("Database pool is not provided in middleware data.")
+        raise RuntimeError("Missing db_pool in middleware context.")
 
-    message_max_len = 4096
-    while True:
-        await sleep(seconds_until(*time))
-        for user in users:
+    async with db_pool.connection() as connection:
+        try:
+            async with connection.transaction():
+                    users: list[User] = await UserDAO(connection).get_all()
+                    message_max_len = 4096
+                    while True:
+                        await sleep(seconds_until(*time))
+                        for user in users:
 
-            await sleep(1)
+                            await sleep(1)
 
-            if user.enable_wisdom:
-                book: Book = await BookDAO(conn).get_by_id(user.selected_wisdom)
-                if not book:
-                    continue
+                            if user.enable_wisdom:
+                                book: Book = await BookDAO(connection).get_by_id(user.selected_wisdom)
+                                if not book:
+                                    continue
 
-                number_page = user.page_selected_wisdom
-                if number_page:
-                    number_page += 1
-                else:
-                    number_page = 1
+                                number_page = user.page_selected_wisdom
+                                if number_page:
+                                    number_page += 1
+                                else:
+                                    number_page = 1
 
-                if number_page == book.count_pages:
-                    number_page = None
+                                if number_page == book.count_pages:
+                                    number_page = None
 
-                page: Page = await PageDAO(conn).get_by_id(book.id, number_page)
+                                page: Page = await PageDAO(connection).get_by_id(book.id, number_page)
 
-                photo_file = FSInputFile(path=abspath(page.photo))
-                text = page.text
-                first_text, len_text = get_part_text(text, 0, 1024)
+                                photo_file = FSInputFile(path=abspath(page.photo))
+                                text = page.text
+                                first_text, len_text = get_part_text(text, 0, 1024)
 
-                try:
-                    await bot.send_photo(
-                        chat_id=user.user_id,
-                        photo=photo_file,
-                        caption=first_text,
-                        parse_mode="HTML",
-                    )
-                    if len(text) > 1024:
-                        text = text[len_text:]
-                        pages = prepare_text(text, message_max_len)
-                        for i in pages:
-                            await bot.send_message(
-                                chat_id=user.id, text=pages[i], parse_mode="HTML"
-                            )
+                                try:
+                                    await bot.send_photo(
+                                        chat_id=user.user_id,
+                                        photo=photo_file,
+                                        caption=first_text,
+                                        parse_mode="HTML",
+                                    )
+                                    if len(text) > 1024:
+                                        text = text[len_text:]
+                                        pages = prepare_text(text, message_max_len)
+                                        for i in pages:
+                                            await bot.send_message(
+                                                chat_id=user.id, text=pages[i], parse_mode="HTML"
+                                            )
 
-                    user.page_selected_wisdom = number_page
+                                    user.page_selected_wisdom = number_page
 
-                except TelegramForbiddenError:
-                    # Пользователь заблокировал бота или запретил сообщения
-                    user.enable_wisdom = False
-                    logging.warning(f"Bot blocked by user {user.id}. Wisdom disabled.")
+                                except TelegramForbiddenError:
+                                    # Пользователь заблокировал бота или запретил сообщения
+                                    user.enable_wisdom = False
+                                    logging.warning(f"Bot blocked by user {user.id}. Wisdom disabled.")
 
-                except TelegramBadRequest as e:
-                    # Например, чат не найден
-                    logging.error(f"Failed to send message to {user.id}: {e}")
-                    user.enable_wisdom = False
+                                except TelegramBadRequest as e:
+                                    # Например, чат не найден
+                                    logging.error(f"Failed to send message to {user.id}: {e}")
+                                    user.enable_wisdom = False
 
-                except Exception as e:
-                    # Любые другие непредвиденные ошибки
-                    logging.exception(
-                        f"Unexpected error sending wisdom to {user.id}: {e}"
-                    )
+                                except Exception as e:
+                                    # Любые другие непредвиденные ошибки
+                                    logging.exception(
+                                        f"Unexpected error sending wisdom to {user.id}: {e}"
+                                    )
 
-            await UserDAO(conn).update(user)
+                            await UserDAO(connection).update(user)
+        except Exception as e:
+            logger.exception("Transaction rolled back due to error: %s", e)
+            raise
+
+

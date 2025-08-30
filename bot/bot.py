@@ -2,7 +2,7 @@ import asyncio
 
 import logging
 
-import psycopg_pool
+from psycopg_pool import AsyncConnectionPool
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -25,14 +25,13 @@ from bot.middlewares.statistics import ActivityCounterMiddleware
 from db.connection import get_pg_pool
 from config.config import Config
 from redis.asyncio import Redis
-from psycopg import AsyncConnection
 
 logger = logging.getLogger(__name__)
 
 
-async def on_startup(bot: Bot, conn: AsyncConnection, time: list[int, int, int]):
+async def on_startup(bot: Bot, db_pool: AsyncConnectionPool, time: list[int, int, int]):
     # Создание
-    asyncio.create_task(daily_notification_page(bot=bot, conn=conn, time=time))
+    asyncio.create_task(daily_notification_page(bot=bot, db_pool=db_pool, time=time))
 
 
 # Функция конфигурирования и запуска бота
@@ -49,7 +48,7 @@ async def main(config: Config) -> None:
     dp = Dispatcher(storage=storage)
 
     # Создаём пул соединений с Postgres
-    db_pool: psycopg_pool.AsyncConnectionPool = await get_pg_pool(
+    db_pool: AsyncConnectionPool = await get_pg_pool(
         db_name=config.db.name,
         host=config.db.host,
         port=config.db.port,
@@ -83,13 +82,7 @@ async def main(config: Config) -> None:
     dp.update.middleware(LangSettingsMiddleware())
     dp.update.middleware(TranslatorMiddleware())
 
-    async with db_pool.connection() as connection:
-        try:
-            async with connection.transaction():
-                await on_startup(bot=bot, conn=connection, time=[9, 0, 0])
-        except Exception as e:
-            logger.exception("Transaction rolled back due to error: %s", e)
-            raise
+    await on_startup(bot=bot, db_pool=db_pool, time=[9, 0, 0])
 
     # Запускаем поллинг
     try:
